@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Untree.co">
+    <link rel="shortcut icon" href="favicon.png">
+    <meta name="description" content="" />
+    <meta name="keywords" content="bootstrap, bootstrap4" />
+
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="css/tiny-slider.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <title>Sports Spot - Write Review</title>
+
+    <style>
+        /* 기존 스타일 유지 */
+        /* ... */
+
+        /* 리뷰 작성 폼 스타일 */
+        #reviewForm {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        #reviewForm textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #reviewForm button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #reviewForm button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Start Header/Navigation -->
+<nav class="custom-navbar navbar navbar-expand-md navbar-dark bg-dark" aria-label="Furni navigation bar">
+    <div class="container">
+        <a class="navbar-brand" href="../index.html">Sports Spot<span>.</span></a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarsFurni">
+            <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html">메인화면</a>
+                </li>
+                <li class="active"><a class="nav-link" href="blog.html">스포츠 시설 정보</a></li>
+                <li><a class="nav-link" href="contact.html">커뮤니티</a></li>
+            </ul>
+
+            <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
+                <li>
+                    <a class="nav-link" href="login.html">
+                        <img src="images/user.svg" alt="User Icon">
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<!-- End Header/Navigation -->
+
+<!-- Start Hero Section -->
+<div class="hero">
+    <div class="container">
+        <div class="row justify-content-between">
+            <div class="col-lg-5">
+                <div class="intro-excerpt">
+                    <h1>리뷰 작성</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Hero Section -->
+
+<div class="container">
+    <form id="reviewForm">
+        <textarea id="reviewContent" rows="5" placeholder="리뷰를 작성해주세요" required></textarea>
+        <button type="submit">리뷰 등록</button>
+    </form>
+</div>
+
+<!-- Start Footer Section -->
+<footer class="footer-section">
+    <div class="container relative">
+        <!-- ... (푸터 내용 유지) ... -->
+    </div>
+</footer>
+<!-- End Footer Section -->
+
+<script src="js/bootstrap.bundle.min.js"></script>
+<script src="js/tiny-slider.js"></script>
+<script src="js/custom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+<script>
+    // API 엔드포인트 설정 (실제 백엔드 URL로 변경 필요)
+    const API_BASE_URL = 'http://your-api-base-url.com/api/v1/review';
+
+    // URL에서 spotId 파라미터 가져오기
+    const urlParams = new URLSearchParams(window.location.search);
+    const spotId = urlParams.get('spotId');
+
+    // 리뷰 제출 이벤트 리스너
+    document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const content = document.getElementById('reviewContent').value;
+
+        try {
+            // userId는 실제 구현 시 로그인된 사용자의 ID로 설정해야 함
+            const userId = 1; // 예시 값
+
+            const response = await axios.post(API_BASE_URL, {
+                userId: userId,
+                spotId: spotId,
+                content: content
+            });
+
+            console.log('리뷰가 성공적으로 등록되었습니다:', response.data);
+            alert('리뷰가 성공적으로 등록되었습니다.');
+            // 리뷰 등록 후 시설 상세 페이지로 돌아가기
+            window.location.href = `facility_detail.html?spotId=${spotId}`;
+        } catch (error) {
+            console.error('리뷰 등록에 실패했습니다:', error);
+            alert('리뷰 등록에 실패했습니다. 다시 시도해 주세요.');
+        }
+    });
+</script>
+</body>
+</html>
