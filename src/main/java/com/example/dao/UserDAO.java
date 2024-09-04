@@ -3,10 +3,7 @@ package com.example.dao;
 import com.example.util.DBUtil;
 import com.example.model.User;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class UserDAO {
     public boolean isEmailExists(String email) {
@@ -60,6 +57,48 @@ public class UserDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+        return user;
+    }
+
+    public User getUserById(Long userId) throws SQLException {
+        String sql = "SELECT * FROM user WHERE id = ? AND isDeleted = false";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractUserFromResultSet(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean updateUser(User user) throws SQLException {
+        String sql = "UPDATE user SET email = ?, name = ?, password = ? WHERE id = ? AND isDeleted = false";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, user.getEmail());
+            stmt.setString(2, user.getName());
+            stmt.setString(3, user.getPassword());
+            stmt.setLong(4, user.getId());
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        }
+    }
+
+    private User extractUserFromResultSet(ResultSet rs) throws SQLException {
+        User user = new User();
+        user.setId(rs.getLong("id"));
+        user.setEmail(rs.getString("email"));
+        user.setName(rs.getString("name"));
+        user.setPassword(rs.getString("password"));
+        user.setDeleted(rs.getBoolean("isDeleted"));
+        Timestamp createdAt = rs.getTimestamp("createdAt");
+        if (createdAt != null) {
+            user.setCreatedAt(createdAt.toLocalDateTime());
         }
         return user;
     }
