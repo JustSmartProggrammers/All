@@ -32,6 +32,11 @@
             justify-content: center;
             margin: 20px 0 20px;
         }
+        .save-spot-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
 
         .header-buttons select {
             padding: 10px;
@@ -258,7 +263,10 @@
         </div>
     </div>
 </div>
-
+<!-- 장소 저장 버튼 추가 -->
+<div class="save-spot-container">
+    <button id="saveSpotButton" class="btn btn-secondary">장소 저장</button>
+</div>
 <div class="reviews-container">
     <div class="reviews">
         <h3>후기</h3>
@@ -285,6 +293,21 @@
 <script src="../auth/auth.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
 <script>
+
+    // 장소 저장 버튼 클릭 이벤트
+    document.getElementById('saveSpotButton').addEventListener('click', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const spotId = urlParams.get('id');
+
+        if (spotId) {
+            // 장소를 저장하는 로직을 여기에 추가
+            // 예를 들어, 로컬 스토리지에 저장할 수 있습니다.
+            localStorage.setItem(`savedSpot-${spotId}`, JSON.stringify({ id: spotId }));
+            alert('장소가 저장되었습니다.');
+        } else {
+            alert('장소 ID를 찾을 수 없습니다.');
+        }
+    });
     // API 엔드포인트 설정 (실제 백엔드 URL로 변경 필요)
     const API_BASE_URL_SPOTS = 'http://localhost:8080/api/v1/spots';
     const API_BASE_URL_REVIEWS = 'http://localhost:8080/api/v1/review';
@@ -403,7 +426,5 @@
     });
 
 </script>
-
-
 </body>
 </html>
