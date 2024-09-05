@@ -1,0 +1,98 @@
+<div class="container">
+    <h2>북마크 목록</h2>
+    <div class="list-section" id="bookmarkList" style="display: block;">
+        <ul id="bookmarkItems"></ul>
+        <div class="pagination">
+            <button id="prevBookmarkPage">이전</button>
+            <span id="bookmarkPageNumbers"></span>
+            <button id="nextBookmarkPage">다음</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .list-section {
+        margin-top: 20px;
+    }
+    .list-section ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .list-section ul li {
+        padding: 10px;
+        background-color: #f8f9fa;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    .pagination button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        background-color: #c0c0c0;
+        color: white;
+        cursor: pointer;
+        margin: 0 5px;
+    }
+    .pagination span {
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+</style>
+
+<script>
+    let currentBookmarkPage = 1;
+    const itemsPerPage = 10;
+
+    // TODO: API 연결
+    // 1. 북마크 목록을 가져오는 함수를 구현하세요.
+    // 예: async function fetchBookmarks(page, perPage) { ... }
+
+    // 2. 페이지네이션 정보를 가져오는 함수를 구현하세요.
+    // 예: async function fetchBookmarkPagination(page, perPage) { ... }
+
+    function renderBookmarks(page) {
+        const bookmarkItems = document.getElementById('bookmarkItems');
+        bookmarkItems.innerHTML = ''; // 기존 목록 초기화
+
+        // TODO: API에서 데이터를 가져와 렌더링하는 로직으로 변경하세요.
+        // 예:
+        // fetchBookmarks(page, itemsPerPage).then(bookmarks => {
+        //     bookmarks.forEach(bookmark => {
+        //         const li = document.createElement('li');
+        //         li.textContent = bookmark.title;
+        //         bookmarkItems.appendChild(li);
+        //     });
+        // });
+
+        updateBookmarkPagination(page);
+    }
+
+    function updateBookmarkPagination(page) {
+        // TODO: API에서 페이지네이션 정보를 가져와 업데이트하는 로직으로 변경하세요.
+        // 예:
+        // fetchBookmarkPagination(page, itemsPerPage).then(paginationInfo => {
+        //     document.getElementById('bookmarkPageNumbers').textContent = `Page ${page} of ${paginationInfo.totalPages}`;
+        //     document.getElementById('prevBookmarkPage').disabled = page === 1;
+        //     document.getElementById('nextBookmarkPage').disabled = page === paginationInfo.totalPages;
+        // });
+    }
+
+    document.getElementById('prevBookmarkPage').addEventListener('click', function() {
+        if (currentBookmarkPage > 1) {
+            currentBookmarkPage--;
+            renderBookmarks(currentBookmarkPage);
+        }
+    });
+
+    document.getElementById('nextBookmarkPage').addEventListener('click', function() {
+        // TODO: 다음 페이지로 이동하는 로직을 구현하세요.
+        // 총 페이지 수는 API에서 제공하는 정보를 사용해야 합니다.
+    });
+
+    renderBookmarks(currentBookmarkPage);  // 초기 페이지 로드
+</script>

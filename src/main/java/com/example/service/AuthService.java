@@ -11,7 +11,7 @@ public class AuthService {
         this.userDAO = new UserDAO();
     }
 
-    public boolean signup(String email, String password, String name) throws Exception {
+    public boolean signup(String email, String password, String name, String phoneNumber) throws Exception {
         if (userDAO.isEmailExists(email)) {
             throw new Exception("Email already exists");
         }
@@ -24,10 +24,9 @@ public class AuthService {
             throw new Exception("Invalid password. Password must be at least 8 characters long and contain at least one number and one letter.");
         }
 
-        // 비밀번호 암호화
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
-        return userDAO.insertUser(email, hashedPassword, name, false);
+        return userDAO.insertUser(email, hashedPassword, name, phoneNumber, false);
     }
 
     public User login(String email, String password) {
@@ -40,6 +39,14 @@ public class AuthService {
 
     public boolean isEmailAvailable(String email) {
         return !userDAO.isEmailExists(email);
+    }
+
+    public User getUserByEmail(String email) {
+        return userDAO.getUserByEmail(email);
+    }
+
+    public boolean checkSession(User user) {
+        return user != null;
     }
 
     private boolean isValidEmail(String email) {

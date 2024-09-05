@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Sports Spot - 계정 정보 변경</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .account-section {
+            margin-top: 20px;
+        }
+        .account-section input {
+            margin-bottom: 10px;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .account-section button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 바 -->
+
+<div class="container">
+    <h2>계정 정보 변경</h2>
+    <div class="account-section" id="accountSettings">
+        <h3>비밀번호 변경</h3>
+        <input type="password" id="currentPassword" placeholder="현재 비밀번호">
+        <input type="password" id="newPassword" placeholder="새 비밀번호">
+        <input type="password" id="confirmNewPassword" placeholder="새 비밀번호 확인">
+        <button id="savePassword">비밀번호 저장</button>
+        <p id="passwordMessage"></p>
+    </div>
+</div>
+
+<script src="js/bootstrap.bundle.min.js"></script>
+<script>
+    // 계정 정보 변경 관련 JavaScript 코드
+    // 실제 서버와 통신하여 정보를 변경하는 로직 구현 필요
+</script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>회원가입</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .register-container {
+        background-color: #fff;
+        padding: 40px; /* Increased padding */
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        width: 600px; /* Increased width for wider layout */
+        text-align: center;
+    }
+    .register-container h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+    .register-container input[type="text"],
+    .register-container input[type="email"],
+    .register-container input[type="password"],
+    .register-container input[type="tel"],
+    .register-container input[type="number"] {
+        width: calc(100% - 130px); /* Adjust width to fit wider container */
+        padding: 12px; /* Increased padding */
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+    .register-container .input-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px; /* Increase spacing between rows */
+    }
+    .register-container .input-group input {
+        flex: 1;
+        margin-right: 10px; /* Increase spacing between input and button */
+    }
+    .register-container .input-group button {
+        padding: 12px; /* Increased padding */
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        background-color: #218838;
+        color: white;
+        width: 130px; /* Fixed width for button */
+    }
+    .register-container .input-group button:hover {
+        background-color: #1e7e34;
+    }
+    .register-container input[type="submit"] {
+        background-color: #28a745;
+        color: white;
+        padding: 12px; /* Increased padding */
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        width: 100%;
+        margin-top: 20px; /* Increased margin on top of submit button */
+    }
+    .register-container input[type="submit"]:hover {
+        background-color: #218838;
+    }
+    .message {
+        margin-top: 5px;
+        font-size: 14px;
+    }
+    .success {
+        color: green;
+    }
+    .error {
+        color: red;
+    }
+    .password-requirements {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+    .invalid {
+        color: red;
+    }
+    .valid {
+        color: green;
+    }
+</style>
+</head>
+<body>
+<div class="register-container">
+    <h2>회원가입</h2>
+    <form id="registerForm">
+        <div class="input-group">
+            <input type="text" name="name" placeholder="이름" required>
+        </div>
+        <div class="input-group">
+            <input type="email" name="email" placeholder="이메일" required>
+            <button type="button" onclick="checkEmail()">중복 확인</button>
+        </div>
+        <div class="input-group">
+            <input type="password" name="password" placeholder="비밀번호" required onkeyup="checkPasswordStrength(this.value)">
+        </div>
+        <div class="password-requirements">
+            비밀번호는 다음 요구사항을 충족해야 합니다:
+            <ul>
+                <li id="length">8자 이상</li>
+                <li id="number">최소 1개의 숫자 포함</li>
+                <li id="letter">최소 1개의 문자 포함</li>
+            </ul>
+        </div>
+        <div class="input-group">
+            <input type="tel" name="phoneNumber" placeholder="전화번호" required>
+            <button type="button" onclick="sendVerificationCode()">인증번호 발송</button>
+        </div>
+        <div id="phoneMessage" class="message"></div>
+        <div class="input-group">
+            <input type="text" name="verification_code" placeholder="인증번호" required>
+            <button type="button" onclick="verifyCode()">확인</button>
+        </div>
+        <div id="codeMessage" class="message"></div>
+        <input type="submit" value="회원가입">
+    </form>
+</div>
+
+<script>
+    // 회원가입 폼 제출 처리
+    document.getElementById('registerForm').addEventListener('submit', handleRegister);
+
+    function handleRegister(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const password = form.password.value;
+
+        // 비밀번호 유효성 검사
+        if (password.length < 8 || !/\d/.test(password) || !/[a-zA-Z]/.test(password)) {
+            alert('비밀번호는 8자 이상이며, 최소 하나의 숫자와 문자를 포함해야 합니다.');
+            return;
+        }
+
+        // 폼 데이터 수집
+        const formData = {
+            name: form.name.value,
+            email: form.email.value,
+            password: password,
+            phoneNumber: form.phoneNumber.value,
+            verification_code: form.verification_code.value
+        };
+
+        // 서버에 회원가입 요청 전송
+        fetch('/api/v1/auth/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || '회원가입 실패');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('회원가입이 완료되었습니다.');
+                window.location.href = 'login.html'; // 로그인 페이지로 리다이렉트
+            })
+            .catch(error => {
+                alert(`회원가입 오류: ${error.message}`);
+            });
+    }
+
+    // 폼 제출 이벤트 리스너 등록
+    document.getElementById('registerForm').addEventListener('submit', handleRegister);
+
+    // 이메일 중복 확인
+    function checkEmail() {
+        const email = document.querySelector('input[name="email"]').value;
+        fetch(`/api/v1/auth/check-email`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Email is available') {
+                    alert('사용 가능한 이메일입니다.');
+                } else {
+                    alert('이미 사용 중인 이메일입니다.');
+                }
+            })
+            .catch(error => {
+                alert('이메일 확인 오류: ' + error.message);
+            });
+    }
+
+    // 인증번호 발송
+    function sendVerificationCode() {
+        const phoneNumber = document.querySelector('input[name="phoneNumber"]').value;
+        const phoneMessageElement = document.getElementById('phoneMessage');
+        const sendButton = document.querySelector('button[onclick="sendVerificationCode()"]');
+
+        sendButton.disabled = true;
+        sendButton.textContent = '발송 중...';
+
+        fetch('/api/v1/sms/send-verification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ phoneNumber })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Verification code sent successfully') {
+                    phoneMessageElement.textContent = '인증번호가 발송되었습니다.';
+                    phoneMessageElement.className = 'message success';
+                } else {
+                    throw new Error(data.message || '인증번호 발송 실패');
+                }
+            })
+            .catch(error => {
+                phoneMessageElement.textContent = `오류: ${error.message}`;
+                phoneMessageElement.className = 'message error';
+            })
+            .finally(() => {
+                sendButton.disabled = false;
+                sendButton.textContent = '인증번호 발송';
+            });
+    }
+
+    // 인증번호 확인
+    function verifyCode() {
+        const phoneNumber = document.querySelector('input[name="phoneNumber"]').value;
+        const verificationCode = document.querySelector('input[name="verification_code"]').value;
+        const codeMessageElement = document.getElementById('codeMessage');
+        const verifyButton = document.querySelector('button[onclick="verifyCode()"]');
+
+        verifyButton.disabled = true;
+        verifyButton.textContent = '확인 중...';
+
+        fetch('/api/v1/sms/verify-code', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ phoneNumber, code: verificationCode })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Phone number verified successfully') {
+                    codeMessageElement.textContent = '인증이 완료되었습니다.';
+                    codeMessageElement.className = 'message success';
+                } else {
+                    throw new Error(data.message || '인증 실패');
+                }
+            })
+            .catch(error => {
+                codeMessageElement.textContent = `오류: ${error.message}`;
+                codeMessageElement.className = 'message error';
+            })
+            .finally(() => {
+                verifyButton.disabled = false;
+                verifyButton.textContent = '확인';
+            });
+    }
+
+    function checkPasswordStrength(password) {
+        const lengthRequirement = document.getElementById('length');
+        const numberRequirement = document.getElementById('number');
+        const letterRequirement = document.getElementById('letter');
+
+        // 8자 이상
+        if(password.length >= 8) {
+            lengthRequirement.classList.remove('invalid');
+            lengthRequirement.classList.add('valid');
+        } else {
+            lengthRequirement.classList.remove('valid');
+            lengthRequirement.classList.add('invalid');
+        }
+
+        // 숫자 포함
+        if(/\d/.test(password)) {
+            numberRequirement.classList.remove('invalid');
+            numberRequirement.classList.add('valid');
+        } else {
+            numberRequirement.classList.remove('valid');
+            numberRequirement.classList.add('invalid');
+        }
+
+        // 문자 포함
+        if(/[a-zA-Z]/.test(password)) {
+            letterRequirement.classList.remove('invalid');
+            letterRequirement.classList.add('valid');
+        } else {
+            letterRequirement.classList.remove('valid');
+            letterRequirement.classList.add('invalid');
+        }
+    }
+</script>
+</body>
+</html>

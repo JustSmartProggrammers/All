@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Untree.co">
+    <link rel="shortcut icon" href="/static/favicon.png">
+
+    <meta name="description" content="" />
+    <meta name="keywords" content="bootstrap, bootstrap4" />
+
+    <!-- Bootstrap CSS -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/tiny-slider.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <title>Sports Spot - 마이페이지</title>
+
+    <script src="/static/auth/auth.js"></script>
+    <script src="/static/nav/navbar.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        .my-buttons {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 150px;
+            margin-left: 50px;
+        }
+        .my-buttons button {
+            padding: 8px 16px;
+            background-color: #3b5d50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .my-buttons button:hover {
+            background-color: #2f4b40;
+        }
+        #content-area {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="navbar-placeholder"></div>
+
+<!-- Start Hero Section -->
+<div class="hero">
+    <div class="container">
+        <div class="row justify-content-between">
+            <div class="col-lg-5">
+                <div class="intro-excerpt">
+                    <h1>마이페이지</h1>
+                </div>
+            </div>
+            <div class="col-lg-7">
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Hero Section -->
+
+<!-- 마이페이지 콘텐츠 섹션 -->
+<div class="untree_co-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-2 my-buttons">
+                <button onclick="loadContent('myPost')">작성글 목록</button>
+                <button onclick="loadContent('myBookmark')">북마크</button>
+                <button onclick="loadContent('accountSettings')">계정정보 변경</button>
+            </div>
+            <div class="col-lg-10">
+                <div id="content-area">
+                    <!-- 동적으로 로드될 콘텐츠 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Start Footer Section -->
+<footer class="footer-section">
+    <div class="container relative">
+        <!-- Footer content here -->
+    </div>
+</footer>
+<!-- End Footer Section -->
+
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/tiny-slider.js"></script>
+<script src="/static/js/custom.js"></script>
+<script>
+    $(document).ready(function(){
+        $("#navbar-placeholder").load("/static/nav/navbar.html", function() {
+            console.log("Navbar loaded");
+            if (typeof setupNavbar === 'function') {
+                setupNavbar();
+            } else {
+                console.error('setupNavbar function is not defined');
+            }
+        });
+    });
+
+    function loadContent(page) {
+        $.get(`/static/mypage/${page}.html`, function(data) {
+            $('#content-area').html(data);
+        });
+    }
+</script>
+</body>
+</html>

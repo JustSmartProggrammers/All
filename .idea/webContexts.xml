@@ -5,6 +5,9 @@
       <map>
         <entry key="file://$PROJECT_DIR$/web/WEB-INF/jsp/spot/listSpots.jsp" value="file://$PROJECT_DIR$/web/WEB-INF/jsp/spot" />
         <entry key="file://$PROJECT_DIR$/web/WEB-INF/jsp/spot/spotDetail.jsp" value="file://$PROJECT_DIR$/web/WEB-INF/jsp/spot" />
+        <entry key="file://$PROJECT_DIR$/web/static/join.html" value="file://$PROJECT_DIR$/web/static" />
+        <entry key="file://$PROJECT_DIR$/web/static/login.html" value="file://$PROJECT_DIR$/web/static" />
+        <entry key="file://$PROJECT_DIR$/web/static/spot/spotDetail.html" value="file://$PROJECT_DIR$/web/static/spot" />
       </map>
     </option>
   </component>

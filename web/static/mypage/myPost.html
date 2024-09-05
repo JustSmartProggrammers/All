@@ -1,0 +1,98 @@
+<div class="container">
+    <h2>작성글 목록</h2>
+    <div class="list-section" id="postList" style="display: block;">
+        <ul id="postItems"></ul>
+        <div class="pagination">
+            <button id="prevPostPage">이전</button>
+            <span id="postPageNumbers"></span>
+            <button id="nextPostPage">다음</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .list-section {
+        margin-top: 20px;
+    }
+    .list-section ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .list-section ul li {
+        padding: 10px;
+        background-color: #f8f9fa;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    .pagination button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        background-color: #c0c0c0;
+        color: white;
+        cursor: pointer;
+        margin: 0 5px;
+    }
+    .pagination span {
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+</style>
+
+<script>
+    let currentPostPage = 1;
+    const itemsPerPage = 10;
+
+    // TODO: API 연결
+    // 1. 작성글 목록을 가져오는 함수를 구현하세요.
+    // 예: async function fetchPosts(page, perPage) { ... }
+
+    // 2. 페이지네이션 정보를 가져오는 함수를 구현하세요.
+    // 예: async function fetchPostPagination(page, perPage) { ... }
+
+    function renderPosts(page) {
+        const postItems = document.getElementById('postItems');
+        postItems.innerHTML = ''; // 기존 목록 초기화
+
+        // TODO: API에서 데이터를 가져와 렌더링하는 로직으로 변경하세요.
+        // 예:
+        // fetchPosts(page, itemsPerPage).then(posts => {
+        //     posts.forEach(post => {
+        //         const li = document.createElement('li');
+        //         li.textContent = post.title;
+        //         postItems.appendChild(li);
+        //     });
+        // });
+
+        updatePostPagination(page);
+    }
+
+    function updatePostPagination(page) {
+        // TODO: API에서 페이지네이션 정보를 가져와 업데이트하는 로직으로 변경하세요.
+        // 예:
+        // fetchPostPagination(page, itemsPerPage).then(paginationInfo => {
+        //     document.getElementById('postPageNumbers').textContent = `Page ${page} of ${paginationInfo.totalPages}`;
+        //     document.getElementById('prevPostPage').disabled = page === 1;
+        //     document.getElementById('nextPostPage').disabled = page === paginationInfo.totalPages;
+        // });
+    }
+
+    document.getElementById('prevPostPage').addEventListener('click', function() {
+        if (currentPostPage > 1) {
+            currentPostPage--;
+            renderPosts(currentPostPage);
+        }
+    });
+
+    document.getElementById('nextPostPage').addEventListener('click', function () {
+        // TODO: 다음 페이지로 이동하는 로직을 구현하세요.
+        // 총 페이지 수는 API에서 제공하는 정보를 사용해야 합니다.
+    });
+
+    renderPosts(currentPostPage);  // 초기 페이지 로드
+</script>

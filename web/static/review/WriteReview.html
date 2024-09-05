@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Untree.co">
+    <link rel="shortcut icon" href="../favicon.png">
+    <meta name="description" content="" />
+    <meta name="keywords" content="bootstrap, bootstrap4" />
+
+    <!-- Bootstrap CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="../css/tiny-slider.css" rel="stylesheet">
+    <link href="../css/style.css" rel="stylesheet">
+    <script src="/static/auth/auth.js"></script>
+    <script src="/static/nav/navbar.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Sports Spot - Write Review</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .review-form-container {
+            display: flex;
+            justify-content: center;
+            padding-top: 20px;
+        }
+
+        .review-form {
+            display: flex;
+            flex-direction: column;
+            font-size: 16px;
+            padding: 30px;
+            background-color: #ffffff;
+            margin: 20px 0;
+            line-height: 1.5;
+            max-width: 600px;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .review-form h2 {
+            margin-bottom: 20px;
+            color: #3b5d50;
+        }
+
+        .review-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            resize: vertical;
+        }
+
+        .review-form button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #3b5d50;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .review-form button:hover {
+            background-color: #2c4a3f;
+        }
+    </style>
+</head>
+
+<body>
+<div id="navbar-placeholder"></div>
+
+<script>
+    $(document).ready(function(){
+        $("#navbar-placeholder").load("/static/nav/navbar.html", function() {
+            console.log("Navbar loaded");
+            if (typeof setupNavbar === 'function') {
+                setupNavbar();
+            } else {
+                console.error('setupNavbar function is not defined');
+            }
+        });
+    });
+</script>
+
+<!-- Start Hero Section -->
+<div class="review-form-container">
+    <form id="reviewForm" class="review-form">
+        <h2>리뷰 작성</h2>
+        <textarea id="reviewContent" rows="5" placeholder="리뷰를 작성해주세요 (최소 10자 이상)" required minlength="10"></textarea>
+        <button type="submit">리뷰 등록</button>
+    </form>
+</div>
+
+<!-- Start Footer Section -->
+<footer class="footer-section">
+    <div class="container relative">
+        <!-- Footer content... -->
+    </div>
+</footer>
+<!-- End Footer Section -->
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script src="../js/tiny-slider.js"></script>
+<script src="../js/custom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+<script src="../auth/auth.js"></script>
+<script>
+    // API 엔드포인트 설정 (실제 백엔드 URL로 변경 필요)
+    const API_BASE_URL = 'http://localhost:8080/api/v1/review';
+
+    // URL에서 spotId 파라미터 가져오기
+    const urlParams = new URLSearchParams(window.location.search);
+    const spotId = urlParams.get('spotId');
+
+    // 페이지 로드 시 사용자 로그인 상태 확인
+    window.addEventListener('load', () => {
+        if (!isLoggedIn()) {
+            alert('리뷰를 작성하려면 로그인이 필요합니다.');
+            window.location.href = 'login.html';
+        }
+    });
+
+    // 리뷰 제출 이벤트 리스너
+    document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const user = getCurrentUser();
+        console.log('Current user from getCurrentUser:', user);  // 추가된 로그
+        if (!user) {
+            alert('리뷰를 작성하려면 로그인이 필요합니다.');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const content = document.getElementById('reviewContent').value;
+
+        // userId와 spotId를 Long으로 변환
+        const userId = Number(user.userId);
+        const spotIdLong = Number(spotId);
+
+        console.log('Converted userId:', userId, 'spotId:', spotIdLong);  // 추가된 로그
+
+        if (isNaN(userId) || isNaN(spotIdLong) || !Number.isInteger(userId) || !Number.isInteger(spotIdLong)) {
+            console.error('Invalid userId or spotId', { userId, spotIdLong });
+            alert('사용자 정보 또는 시설 정보가 올바르지 않습니다.');
+            return;
+        }
+
+        const requestData = {
+            userId: userId,
+            spotId: spotIdLong,
+            username: user.username,
+            content: content
+        };
+
+        console.log('Sending review data:', requestData);
+
+        try {
+            const response = await axios.post(API_BASE_URL, requestData);
+            console.log('리뷰가 성공적으로 등록되었습니다:', response.data);
+            alert('리뷰가 성공적으로 등록되었습니다.');
+            window.location.href = `blog.html?id=${spotId}`;
+        } catch (error) {
+            console.error('리뷰 등록에 실패했습니다:', error.response ? error.response.data : error.message);
+            alert('리뷰 등록에 실패했습니다. 다시 시도해 주세요.');
+        }
+    });
+</script>
+</body>
+</html>

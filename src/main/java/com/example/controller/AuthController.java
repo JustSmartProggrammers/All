@@ -4,6 +4,8 @@ import com.example.model.User;
 import com.example.service.AuthService;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -13,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.BufferedReader;
+import java.nio.charset.StandardCharsets;
 
 @WebServlet("/api/v1/auth/*")
 public class AuthController extends HttpServlet {
@@ -49,7 +52,24 @@ public class AuthController extends HttpServlet {
                     sendErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND, "Invalid path");
             }
         } catch (Exception e) {
-            sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+            e.printStackTrace(); // 서버 로그에 스택 트레이스 출력
+            sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String path = req.getPathInfo();
+
+        try {
+            if ("/check-session".equals(path)) {
+                handleCheckSession(req, resp);
+            } else {
+                sendErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND, "Invalid path");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An unexpected error occurred: " + e.getMessage());
         }
     }
 
@@ -58,9 +78,10 @@ public class AuthController extends HttpServlet {
         String email = jsonRequest.get("email").getAsString();
         String password = jsonRequest.get("password").getAsString();
         String name = jsonRequest.get("name").getAsString();
+        String phoneNumber = jsonRequest.get("phoneNumber").getAsString();
 
         try {
-            boolean success = authService.signup(email, password, name);
+            boolean success = authService.signup(email, password, name, phoneNumber);
             if (success) {
                 sendJsonResponse(resp, HttpServletResponse.SC_CREATED, createJsonResponse("User created successfully"));
             } else {
@@ -79,9 +100,15 @@ public class AuthController extends HttpServlet {
         User user = authService.login(email, password);
 
         if (user != null) {
-            HttpSession session = req.getSession();
+            HttpSession session = req.getSession(true);
             session.setAttribute("user", user);
-            sendJsonResponse(resp, HttpServletResponse.SC_OK, createJsonResponse("Login successful"));
+            session.setMaxInactiveInterval(30 * 60); // 30 minutes
+
+            JsonObject jsonResponse = new JsonObject();
+            jsonResponse.addProperty("id", user.getId());
+            jsonResponse.addProperty("username", user.getName());
+            jsonResponse.addProperty("email", user.getEmail());
+            sendJsonResponse(resp, HttpServletResponse.SC_OK, jsonResponse);
         } else {
             sendErrorResponse(resp, HttpServletResponse.SC_UNAUTHORIZED, "Invalid email or password");
         }
@@ -96,32 +123,63 @@ public class AuthController extends HttpServlet {
     }
 
     private void handleCheckEmail(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        JsonObject jsonRequest = readJsonRequest(req);
-        String email = jsonRequest.get("email").getAsString();
+        try {
+            JsonObject jsonRequest = readJsonRequest(req);
+            String email = jsonRequest.get("email").getAsString();
 
-        if (email == null || email.isEmpty()) {
-            sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Email is required");
-            return;
-        }
+            if (email == null || email.isEmpty()) {
+                sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Email is required");
+                return;
+            }
 
-        boolean isAvailable = authService.isEmailAvailable(email);
-        if (isAvailable) {
-            JsonObject jsonResponse = new JsonObject();
-            jsonResponse.addProperty("message", "Email is available");
-            sendJsonResponse(resp, HttpServletResponse.SC_OK, jsonResponse);
-        } else {
-            sendErrorResponse(resp, HttpServletResponse.SC_CONFLICT, "Email is already in use");
+            boolean isAvailable = authService.isEmailAvailable(email);
+            if (isAvailable) {
+                JsonObject jsonResponse = new JsonObject();
+                jsonResponse.addProperty("message", "Email is available");
+                sendJsonResponse(resp, HttpServletResponse.SC_OK, jsonResponse);
+            } else {
+                sendErrorResponse(resp, HttpServletResponse.SC_CONFLICT, "Email is already in use");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Error processing request: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error checking email: " + e.getMessage());
         }
     }
 
+    private void handleCheckSession(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        HttpSession session = req.getSession(false);
+        JsonObject jsonResponse = new JsonObject();
+        if (session != null && session.getAttribute("user") != null) {
+            jsonResponse.addProperty("loggedIn", true);
+        } else {
+            jsonResponse.addProperty("loggedIn", false);
+        }
+        sendJsonResponse(resp, HttpServletResponse.SC_OK, jsonResponse);
+    }
+
     private JsonObject readJsonRequest(HttpServletRequest req) throws IOException {
-        BufferedReader reader = req.getReader();
         StringBuilder sb = new StringBuilder();
         String line;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
+        try (BufferedReader reader = req.getReader()) {
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
         }
-        return gson.fromJson(sb.toString(), JsonObject.class);
+        String requestBody = sb.toString();
+
+        // 요청 본문 로깅
+        System.out.println("Request body: " + requestBody);
+
+        try {
+            // UTF-8로 인코딩하여 파싱
+            String utf8RequestBody = new String(requestBody.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+            return gson.fromJson(utf8RequestBody, JsonObject.class);
+        } catch (JsonSyntaxException e) {
+            throw new IOException("Invalid JSON format: " + e.getMessage(), e);
+        }
     }
 
     private void sendJsonResponse(HttpServletResponse resp, int statusCode, JsonObject jsonResponse) throws IOException {
