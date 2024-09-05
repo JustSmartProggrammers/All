@@ -41,6 +41,13 @@ public class UserController extends HttpServlet {
                 case "GET":
                     handleGet(pathInfo, req, resp);
                     break;
+                case "POST":
+                    if ("/check-password".equals(pathInfo)) {
+                        handleCheckPassword(req, resp);
+                    } else {
+                        handlePost(req, resp);
+                    }
+                    break;
                 case "PUT":
                     handlePut(pathInfo, req, resp);
                     break;
@@ -72,6 +79,20 @@ public class UserController extends HttpServlet {
         }
     }
 
+    private void handlePost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            JsonNode jsonRequest = readJsonRequest(req);
+            User newUser = objectMapper.treeToValue(jsonRequest, User.class);
+
+            User createdUser = userService.createUser(newUser);
+            sendJsonResponse(resp, HttpServletResponse.SC_CREATED, createdUser);
+        } catch (JsonProcessingException e) {
+            sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON format: " + e.getMessage());
+        } catch (SQLException e) {
+            sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
+        }
+    }
+
     private void handlePut(String pathInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (pathInfo == null || pathInfo.equals("/")) {
             sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "User ID is required");
@@ -96,6 +117,25 @@ public class UserController extends HttpServlet {
             sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
         } catch (JsonProcessingException e) {
             sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON format: " + e.getMessage());
+        }
+    }
+
+    private void handleCheckPassword(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            JsonNode jsonRequest = readJsonRequest(req);
+            String password = jsonRequest.get("password").asText();
+            Long userId = jsonRequest.get("userId").asLong();
+
+            boolean isPasswordValid = userService.checkPassword(userId, password);
+
+            Map<String, Boolean> response = new HashMap<>();
+            response.put("isValid", isPasswordValid);
+
+            sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
+        } catch (JsonProcessingException | NullPointerException e) {
+            sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid request format: " + e.getMessage());
+        } catch (SQLException e) {
+            sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
         }
     }
 

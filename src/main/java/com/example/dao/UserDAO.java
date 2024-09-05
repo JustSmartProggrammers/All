@@ -77,6 +77,29 @@ public class UserDAO {
         return null;
     }
 
+    public User createUser(User user) throws SQLException {
+        String sql = "INSERT INTO user (email, password, name, phoneNumber, isDeleted, createdAt) VALUES (?, ?, ?, ?, ?, NOW())";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, user.getEmail());
+            stmt.setString(2, user.getPassword());
+            stmt.setString(3, user.getName());
+            stmt.setString(4, user.getPhoneNumber());
+            stmt.setBoolean(5, user.isDeleted());
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        user.setId(generatedKeys.getLong(1));
+                        return user;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public boolean updateUser(User user) throws SQLException {
         String sql = "UPDATE user SET email = ?, name = ?, password = ? WHERE id = ? AND isDeleted = false";
         try (Connection conn = DBUtil.getConnection();
