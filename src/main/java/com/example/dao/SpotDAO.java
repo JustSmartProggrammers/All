@@ -10,4 +10,6 @@ public interface SpotDAO {
     List<Spot> findSpotsBySportsType(String sportsType);
     Spot findSpotById(Long spotId);
     String findReservationSiteBySportsId(Long sportsId);
+    List<Spot> findSpotsByRegionAndSportsType(String regionType, String sportsType);
+
 }

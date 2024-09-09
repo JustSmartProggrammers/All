@@ -26,7 +26,7 @@ public class SpotImageService {
             case "jokgu":
                 return IMAGE_DIRECTORY + "족구장.jpg";
             case "soccer":
-                return IMAGE_DIRECTORY + "축구장.jpg";
+                return IMAGE_DIRECTORY + "축구장.png";
             case "tennis":
                 return IMAGE_DIRECTORY + "테니스장.jpg";
             case "futsal":

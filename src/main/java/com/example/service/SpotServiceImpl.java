@@ -29,6 +29,7 @@ public class SpotServiceImpl implements SpotService {
         return spotDao.findSpotsBySportsType(sportsType);
     }
 
+
     @Override
     public Spot getSpotDetail(Long spotId) {
         return spotDao.findSpotById(spotId);
@@ -37,5 +38,10 @@ public class SpotServiceImpl implements SpotService {
     @Override
     public String getReservationSite(Long sportsId) {
         return spotDao.findReservationSiteBySportsId(sportsId);
+    }
+
+    @Override
+    public List<Spot> getSpotsByRegionAndSportsType(String regionType, String sportsType) {
+        return spotDao.findSpotsByRegionAndSportsType(regionType, sportsType);
     }
 }

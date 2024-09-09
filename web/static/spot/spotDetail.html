@@ -299,6 +299,8 @@
     const API_BASE_URL_REVIEWS = 'http://localhost:8080/api/v1/review';
     const API_BASE_URL_USERS = 'http://localhost:8080/api/v1/user';
     const API_BASE_URL_BOOKMARKS = 'http://localhost:8080/api/v1/bookmark';
+    const API_BASE_URL_IMAGE = 'http://localhost:8080/api/v1/spot/image';
+
 
     let currentUser;
     let currentSpotId;
@@ -374,6 +376,7 @@
             const response = await axios.get(`${API_BASE_URL_SPOTS}/detail/${spotId}`);
             const spotDetail = response.data;
             displaySpotDetail(spotDetail);
+            fetchSpotImage(spotDetail.sportsType);
         } catch (error) {
             console.error('시설 상세 정보를 불러오는 데 실패했습니다:', error);
         }
@@ -388,12 +391,58 @@
         document.getElementById('facilityParking').textContent = spotDetail.parking;
         document.getElementById('facilityRental').textContent = spotDetail.rentalAvailable;
         document.getElementById('facilityFee').textContent = spotDetail.fee;
-        // 이미지는 예시 이미지를 사용하거나, 실제 이미지 URL이 있다면 그것을 사용하세요
-        document.getElementById('facilityImage').src = 'https://via.placeholder.com/400x300?text=' + spotDetail.name;
+        // 이미지는 fetchSpotImage 함수에서 처리합니다.
+    }
+    async function fetchSpotImage(sportsType) {
+        try {
+            const imageType = mapSportsTypeToImageType(sportsType);
+            const response = await axios.get(`${API_BASE_URL_IMAGE}/${imageType}`);
+            let imageUrl = response.data.image;
+
+            // 이미지 URL을 백엔드 서버의 주소와 결합
+            imageUrl = imageUrl.replace('/web', '');
+            const fullImageUrl = `http://localhost:8080${imageUrl}`;
+
+            displaySpotImage(fullImageUrl);
+        } catch (error) {
+            console.error('이미지를 불러오는 데 실패했습니다:', error);
+            displayDefaultImage();
+        }
     }
 
+    function mapSportsTypeToImageType(sportsType) {
+        const mapping = {
+            "수영장": "swimming",
+            "야구장": "baseball",
+            "축구장": "soccer",
+            "테니스장": "tennis",
+            "농구장": "basketball",
+            "골프연습장": "golf",
+            "족구장": "jokgu",
+            "배드민턴장": "badminton",
+            "풋살장": "futsal",
+            "게이트볼장": "gateball",
+            "배구장": "volleyball",
+            "빙상장": "ice"
+        };
+        return mapping[sportsType] || "default";
+    }
 
+    function displaySpotImage(imageUrl) {
+        const imgElement = document.getElementById('facilityImage');
+        imgElement.src = imageUrl;
+        imgElement.alt = "시설 이미지";
+        imgElement.onerror = function() {
+            this.onerror = null;
+            displayDefaultImage();
+        };
+    }
 
+    function displayDefaultImage() {
+        const imgElement = document.getElementById('facilityImage');
+        imgElement.src = "https://via.placeholder.com/400x300?text=이미지 없음";
+        imgElement.alt = "기본 시설 이미지";
+    }
     async function fetchReviews(spotId) {
         try {
             const response = await axios.get(`${API_BASE_URL_REVIEWS}/spot/${spotId}`);

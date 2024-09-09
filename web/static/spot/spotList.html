@@ -33,7 +33,7 @@
         justify-content: center;
         margin: 20px 0 20px;
     }
-    
+
     .header-buttons select {
         padding: 10px 20px; /* 세로 패딩과 가로 패딩 조정 */
         border: none;
@@ -46,7 +46,7 @@
         width: 700px; /* 드롭다운 너비 설정 */
         margin: 0 5px; /* 드롭다운 사이에 간격 추가 */
     }
-    
+
     #searchContainer {
         display: none; /* 기본적으로 숨김 */
         margin-top: 10px;
@@ -57,7 +57,7 @@
         align-items: center; /* 수직 중앙 정렬 */
         gap: 10px; /* 입력 필드와 버튼 사이의 간격 */
     }
-    
+
     #searchInput {
         width: calc(100% - 60px); /* 너비 조정 (필요에 따라 수정) */
         padding: 10px 20px; /* 위아래 패딩: 10px, 좌우 패딩: 20px */
@@ -133,7 +133,7 @@
         padding: 10px 20px;
         font-size: 16px;
     }
-    
+
     /* 반응형 */
     @media (max-width: 768px) {
         .facility-cards {
@@ -251,8 +251,8 @@
 <!-- JavaScript to handle dropdown selections and pagination -->
 <script>
   // API 엔드포인트 설정
-  const API_BASE_URL_SPOT = 'http://localhost:8080/api/v1/spots'; // Spot API URL
-  const API_BASE_URL_IMAGE = 'http://localhost:8080/api/v1/spot/image'; // Image API URL
+  const API_BASE_URL_SPOT = 'http://localhost:8080/api/v1/spots';
+  const API_BASE_URL_IMAGE = 'http://localhost:8080/api/v1/spot/image';
 
   // 페이지네이션 변수
   let currentPage = 1;
@@ -270,15 +270,19 @@
 
   // 페이지 로드 시 시설 정보 가져오기
   document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM 로드 완료, fetchAllSpots 호출');
     fetchAllSpots();
   });
 
   // 모든 시설 정보 가져오기
   async function fetchAllSpots() {
     try {
+      console.log('모든 시설 정보 가져오기 시작');
       const response = await axios.get(API_BASE_URL_SPOT);
-      allFacilities = response.data; // API 응답에서 시설 정보 가져오기
+      console.log('받은 시설 정보:', response.data);
+      allFacilities = response.data;
       totalPages = Math.ceil(allFacilities.length / cardsPerPage);
+      console.log(`총 ${allFacilities.length}개의 시설, ${totalPages} 페이지`);
       renderFacilityCards(currentPage);
     } catch (error) {
       console.error('시설 정보를 불러오는 데 실패했습니다:', error);
@@ -288,6 +292,7 @@
 
   // 시설 카드 렌더링
   async function renderFacilityCards(page) {
+    console.log(`${page} 페이지 시설 카드 렌더링 시작`);
     const start = (page - 1) * cardsPerPage;
     const end = start + cardsPerPage;
     const paginatedData = allFacilities.slice(start, end);
@@ -296,46 +301,20 @@
 
     for (const facility of paginatedData) {
       try {
-        console.log("반환값 (facility): ", facility)
-        const sportsType = facility.sportsType;
-        switch (sportsType) {
-          case "게이트볼장":
-            return "gateball";
-          case "골프연습장":
-            return "golf";
-          case "농구장":
-            return "basketball";
-          case "배구장":
-            return "volleyball";
-          case "배드민턴장":
-            return "badminton";
-          case "빙상장":
-            return "ice";
-          case "수영장":
-            return "swimming";
-          case "야구장":
-            return "baseball";
-          case "족구장":
-            return "jokgu";
-          case "축구장":
-            return "soccer";
-          case "테니스장":
-            return "tennis";
-          case "풋살장":
-            return "futsal";
-          default:
-            return "default"; // 기본 이미지 또는 오류 이미지
-        }
+        const sportsType = mapSportsTypeToImageType(facility.sportsType);
+        console.log(`${facility.name}의 이미지 URL 요청 중 (${sportsType})`);
         const response = await axios.get(`${API_BASE_URL_IMAGE}/${sportsType}`);
-        const imageUrl = response.data.image;
-        console.log('Image URL:', imageUrl);
+        let imageUrl = response.data.image;
+        console.log('받은 이미지 URL:', imageUrl);
 
+        imageUrl = imageUrl.replace('/web', '');
+        const fullImageUrl = `http://localhost:8080${imageUrl}`;
+        console.log('최종 이미지 URL:', fullImageUrl);
 
         const facilityCard = document.createElement('div');
         facilityCard.classList.add('facility-card');
-
         facilityCard.innerHTML = `
-          <img src="${imageUrl}" alt="${facility.name}">
+          <img src="${fullImageUrl}" alt="${facility.name}" loading="lazy">
           <div class="status">${facility.status || '정보 없음'}</div>
           <div class="name">${facility.name}</div>
           <div class="hours">${facility.weekdayHours || '정보 없음'}</div>
@@ -352,12 +331,32 @@
     }
 
     pageNumbers.textContent = `Page ${page} of ${totalPages}`;
+    console.log(`${page} 페이지 시설 카드 렌더링 완료`);
+  }
+
+  function mapSportsTypeToImageType(sportsType) {
+    switch (sportsType) {
+      case "수영장": return "swimming";
+      case "야구장": return "baseball";
+      case "축구장": return "soccer";
+      case "테니스장": return "tennis";
+      case "농구장": return "basketball";
+      case "골프연습장": return "golf";
+      case "족구장": return "jokgu";
+      case "배드민턴장": return "badminton";
+      case "풋살장": return "futsal";
+      case "게이트볼장": return "gateball";
+      case "배구장": return "volleyball";
+      case "빙상장": return "ice";
+      default: return "default";
+    }
   }
 
   // 이전 페이지 버튼
   prevPageBtn.addEventListener('click', () => {
     if (currentPage > 1) {
       currentPage--;
+      console.log(`이전 페이지 버튼 클릭, 현재 페이지: ${currentPage}`);
       renderFacilityCards(currentPage);
     }
   });
@@ -366,48 +365,101 @@
   nextPageBtn.addEventListener('click', () => {
     if (currentPage < totalPages) {
       currentPage++;
+      console.log(`다음 페이지 버튼 클릭, 현재 페이지: ${currentPage}`);
       renderFacilityCards(currentPage);
     }
   });
 
-  // 종목별 필터링
-  facilityDropdown.addEventListener('change', async (e) => {
-    const sportsType = e.target.value;
-    if (sportsType) {
-      try {
-        const response = await axios.get(`${API_BASE_URL_SPOT}/${sportsType}`);
-        allFacilities = response.data;
-        currentPage = 1;
-        totalPages = Math.ceil(allFacilities.length / cardsPerPage);
-        renderFacilityCards(currentPage);
-      } catch (error) {
-        console.error('종목별 시설 정보를 불러오는 데 실패했습니다:', error);
-      }
-    } else {
-      fetchAllSpots();
-    }
-  });
+  // 지역과 스포츠 종목을 동시에 필터링하는 함수
+  async function fetchSpotsByRegionAndSportsType(regionType, sportsType) {
+    try {
+      console.log(`지역 및 스포츠 종목 필터링: 지역 - ${regionType}, 종목 - ${sportsType}`);
+      const encodedRegionType = encodeURIComponent(regionType);
+      const encodedSportsType = encodeURIComponent(sportsType);
+      const url = `${API_BASE_URL_SPOT}/filter?region=${encodedRegionType}&sports=${encodedSportsType}`;
+      console.log('요청 URL:', url);
 
-  // 지역별 필터링
-  searchDropdown.addEventListener('change', async (e) => {
-    const regionType = e.target.value;
-    if (regionType) {
-      try {
-        const response = await axios.get(`${API_BASE_URL_SPOT}/${regionType}`);
-        allFacilities = response.data;
-        currentPage = 1;
-        totalPages = Math.ceil(allFacilities.length / cardsPerPage);
-        renderFacilityCards(currentPage);
-      } catch (error) {
-        console.error('지역별 시설 정보를 불러오는 데 실패했습니다:', error);
+      const response = await axios.get(url);
+      console.log('서버 응답:', response);
+      console.log('필터링된 시설 정보:', response.data);
+
+      allFacilities = response.data;
+      currentPage = 1;
+      totalPages = Math.ceil(allFacilities.length / cardsPerPage);
+      console.log(`필터링 결과: ${allFacilities.length}개의 시설, ${totalPages} 페이지`);
+      renderFacilityCards(currentPage);
+    } catch (error) {
+      console.error('시설 정보를 불러오는 데 실패했습니다:', error);
+      if (error.response) {
+        console.error('Error status:', error.response.status);
+        console.error('Error data:', error.response.data);
       }
+      alert('시설 정보를 불러오는 데 실패했습니다. 서버 응답을 확인해 주세요.');
+    }
+  }
+
+  // 필터 처리 함수
+  function handleFilters() {
+    const sportsType = facilityDropdown.value;
+    const regionType = searchDropdown.value;
+    console.log(`필터 처리: 지역 - ${regionType}, 종목 - ${sportsType}`);
+
+    if (sportsType && regionType) {
+      fetchSpotsByRegionAndSportsType(regionType, sportsType);
+    } else if (sportsType) {
+      console.log(`종목별 필터링: ${sportsType}`);
+      const encodedSportsType = encodeURIComponent(sportsType);
+      axios.get(`${API_BASE_URL_SPOT}/sports/${encodedSportsType}`)
+              .then(response => {
+                console.log('종목별 필터링 결과:', response.data);
+                allFacilities = response.data;
+                currentPage = 1;
+                totalPages = Math.ceil(allFacilities.length / cardsPerPage);
+                renderFacilityCards(currentPage);
+              })
+              .catch(error => {
+                console.error('종목별 시설 정보를 불러오는 데 실패했습니다:', error);
+                if (error.response) {
+                  console.error('Error response:', error.response.data);
+                }
+                alert('종목별 시설 정보를 불러오는 데 실패했습니다. 서버 응답을 확인해 주세요.');
+              });
+    } else if (regionType) {
+      console.log(`지역별 필터링: ${regionType}`);
+      const encodedRegionType = encodeURIComponent(regionType);
+      axios.get(`${API_BASE_URL_SPOT}/region/${encodedRegionType}`)
+              .then(response => {
+                console.log('지역별 필터링 결과:', response.data);
+                allFacilities = response.data;
+                currentPage = 1;
+                totalPages = Math.ceil(allFacilities.length / cardsPerPage);
+                renderFacilityCards(currentPage);
+              })
+              .catch(error => {
+                console.error('지역별 시설 정보를 불러오는 데 실패했습니다:', error);
+                if (error.response) {
+                  console.error('Error response:', error.response.data);
+                }
+                alert('지역별 시설 정보를 불러오는 데 실패했습니다. 서버 응답을 확인해 주세요.');
+              });
     } else {
+      console.log('모든 필터 해제, 전체 시설 정보 불러오기');
       fetchAllSpots();
     }
-  });
+  }
+
+  // 이벤트 리스너 설정
+  facilityDropdown.addEventListener('change', handleFilters);
+  searchDropdown.addEventListener('change', handleFilters);
+
+  // 시설 상세 정보 페이지로 이동
+  function navigateToSpotDetail(spotId) {
+    console.log(`시설 상세 정보 페이지로 이동: ID ${spotId}`);
+    window.location.href = `/static/spot/spotDetail.html?id=${spotId}`;
+  }
 </script>
 <!-- End Hero Section -->
-      
+
       <!-- Start Footer Section -->
       <footer class="footer-section">
         <div class="container relative">
@@ -415,7 +467,7 @@
              <div class="col-lg-4">
                <div class="mb-4 footer-logo-wrap"><a href="#" class="footer-logo">Sports Spot<span>.</span></a></div>
                <p class="mb-4">National Public Sports Facility Information Comprehensive Service</p>
-  
+
                <ul class="list-unstyled custom-social">
                  <li><a href="#"><span class="fa fa-brands fa-facebook-f"></span></a></li>
                  <li><a href="#"><span class="fa fa-brands fa-twitter"></span></a></li>
@@ -423,7 +475,7 @@
                  <li><a href="#"><span class="fa fa-brands fa-linkedin"></span></a></li>
                </ul>
              </div>
-  
+
              <div class="col-lg-8">
                <div class="row links-wrap">
                  <div class="col-6 col-sm-6 col-md-3">
@@ -434,7 +486,7 @@
                       <li><a href="#">Contact us</a></li>
                     </ul>
                  </div>
-  
+
                  <div class="col-6 col-sm-6 col-md-3">
                     <ul class="list-unstyled">
                       <li><a href="#">Support</a></li>
@@ -442,7 +494,7 @@
                       <li><a href="#">Live chat</a></li>
                     </ul>
                  </div>
-  
+
                  <div class="col-6 col-sm-6 col-md-3">
                     <ul class="list-unstyled">
                       <li><a href="#">Jobs</a></li>
@@ -451,7 +503,7 @@
                       <li><a href="#">Privacy Policy</a></li>
                     </ul>
                  </div>
-  
+
                  <div class="col-6 col-sm-6 col-md-3">
                     <ul class="list-unstyled">
                       <li><a href="#">Nordic Chair</a></li>
@@ -462,14 +514,14 @@
                </div>
              </div>
            </div>
-  
+
            <div class="border-top copyright">
              <div class="row pt-4">
                <div class="col-lg-6">
                  <p class="mb-2 text-center text-lg-start">Copyright &copy;<script>document.write(new Date().getFullYear());</script>. All Rights Reserved. &mdash; Designed with love by <a href="https://untree.co">Untree.co</a> Distributed By <a hreff="https://themewagon.com">ThemeWagon</a>  <!-- License information: https://untree.co/license/ -->
            </p>
                </div>
-  
+
                <div class="col-lg-6 text-center text-lg-end">
                  <ul class="list-unstyled d-inline-flex ms-auto">
                     <li class="me-4"><a href="#">Terms &amp; Conditions</a></li>

@@ -10,4 +10,6 @@ public interface SpotService {
     List<Spot> getSpotsBySportsType(String sportsType);
     Spot getSpotDetail(Long spotId);
     String getReservationSite(Long sportsId);
+    List<Spot> getSpotsByRegionAndSportsType(String regionType, String sportsType);
+
 }

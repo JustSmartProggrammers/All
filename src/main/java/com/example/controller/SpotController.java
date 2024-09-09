@@ -54,10 +54,35 @@ public class SpotController extends HttpServlet {
             return (req, resp) -> handleGetReservationSite(req, resp, extractId(path, "/reservation/"));
         } else if (path.startsWith("/sports/")) {
             return (req, resp) -> handleGetSpotsBySportsType(req, resp, path.substring("/sports/".length()));
+        } else if (path.startsWith("/filter")) {
+            return this::handleGetSpotsByRegionAndSportsType;
         } else {
             throw new IllegalArgumentException("Invalid path: " + path);
         }
     }
+
+    private void handleGetSpotsByRegionAndSportsType(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String regionType = req.getParameter("region");
+        String sportsType = req.getParameter("sports");
+
+        System.out.println("Received parameters - region: " + regionType + ", sports: " + sportsType);  // 디버깅용 로그
+
+        if (regionType == null || sportsType == null || regionType.isEmpty() || sportsType.isEmpty()) {
+            sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Both region and sports parameters are required and cannot be empty");
+            return;
+        }
+
+        try {
+            List<Spot> spots = spotService.getSpotsByRegionAndSportsType(regionType, sportsType);
+            System.out.println("Found " + spots.size() + " spots");  // 디버깅용 로그
+            sendJsonResponse(resp, spots);
+        } catch (Exception e) {
+            System.err.println("Error in handleGetSpotsByRegionAndSportsType: " + e.getMessage());  // 디버깅용 로그
+            e.printStackTrace();
+            sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred while processing your request");
+        }
+    }
+
 
     private Long extractId(String path, String prefix) {
         try {
