@@ -10,13 +10,15 @@
         .account-section {
             margin-top: 20px;
         }
+
         .account-section input {
             margin-bottom: 10px;
             padding: 10px;
-            width: 100%;
+            width: 100%; /* 입력 필드 전체 너비 */
             border: 1px solid #ccc;
             border-radius: 5px;
         }
+
         .account-section button {
             padding: 10px 20px;
             border: none;
@@ -25,29 +27,104 @@
             color: white;
             cursor: pointer;
             font-weight: bold;
-            margin-right: 10px;
+            width: auto; /* 버튼 크기를 글자에 맞게 자동 조정 */
+            margin-left: 0; /* 왼쪽 정렬 */
+        }
+
+        .inline-group {
+            display: block; /* flex 대신 block으로 변경하여 버튼을 입력창 밑으로 이동 */
+        }
+
+        .name-section, .password-section {
+            margin-top: 30px;
+        }
+
+        .account-section input + input {
+            margin-top: 10px; /* 입력창 사이 간격을 10px로 줄임 */
         }
     </style>
 </head>
 <body>
-<!-- 네비게이션 바 -->
 
 <div class="container">
     <h2>계정 정보 변경</h2>
-    <div class="account-section" id="accountSettings">
-        <h3>비밀번호 변경</h3>
-        <input type="password" id="currentPassword" placeholder="현재 비밀번호">
-        <input type="password" id="newPassword" placeholder="새 비밀번호">
-        <input type="password" id="confirmNewPassword" placeholder="새 비밀번호 확인">
-        <button id="savePassword">비밀번호 저장</button>
-        <p id="passwordMessage"></p>
+
+    <!-- 이름 변경 섹션 -->
+    <div class="account-section name-section" id="nameChangeSection">
+        <h3>이름 변경</h3>
+        <input type="text" id="newName" placeholder="새 이름"> <!-- 새 이름 입력창 -->
+        <button id="saveName">이름 저장</button> <!-- 이름 저장 버튼 -->
+        <p id="nameMessage"></p> <!-- 이름 변경 메시지 표시 -->
     </div>
+
+    <!-- 비밀번호 변경 섹션 -->
+    <div class="account-section password-section" id="accountSettings">
+        <h3>비밀번호 변경</h3>
+
+        <!-- 현재 비밀번호 입력창 -->
+        <div class="inline-group">
+            <input type="password" id="currentPassword" placeholder="현재 비밀번호"> <!-- 현재 비밀번호 입력창 -->
+            <button id="verifyPassword">일치 확인</button> <!-- 비밀번호 확인 버튼 -->
+        </div>
+
+        <!-- 비밀번호 확인 결과를 표시할 p 태그 추가 -->
+        <p id="passwordVerifyMessage"></p>
+
+        <!-- 새 비밀번호 입력창 -->
+        <input type="password" id="newPassword" placeholder="새 비밀번호">
+
+        <!-- 새 비밀번호 확인 입력창 -->
+        <input type="password" id="confirmNewPassword" placeholder="새 비밀번호 확인">
+
+        <button id="savePassword">비밀번호 저장</button> <!-- 비밀번호 저장 버튼 -->
+        <p id="passwordMessage"></p> <!-- 비밀번호 변경 메시지 표시 -->
+    </div>
+
 </div>
 
 <script src="js/bootstrap.bundle.min.js"></script>
 <script>
-    // 계정 정보 변경 관련 JavaScript 코드
-    // 실제 서버와 통신하여 정보를 변경하는 로직 구현 필요
+    // 이름 저장 버튼 로직
+    document.getElementById('saveName').addEventListener('click', function() {
+        const newName = document.getElementById('newName').value;
+
+        if (newName.trim() === "") {
+            document.getElementById('nameMessage').textContent = "새 이름을 입력해주세요.";
+            document.getElementById('nameMessage').style.color = 'red';
+        } else {
+            document.getElementById('nameMessage').textContent = "이름이 성공적으로 변경되었습니다.";
+            document.getElementById('nameMessage').style.color = 'green';
+        }
+    });
+
+    // 현재 비밀번호 확인 버튼 로직
+    document.getElementById('verifyPassword').addEventListener('click', function() {
+        const currentPassword = document.getElementById('currentPassword').value;
+
+        // 서버와 통신하여 현재 비밀번호 확인하는 로직 추가 필요
+        if (currentPassword === "server-side-valid-password") {
+            document.getElementById('passwordVerifyMessage').textContent = "비밀번호가 일치합니다.";
+            document.getElementById('passwordVerifyMessage').style.color = 'green';
+        } else {
+            document.getElementById('passwordVerifyMessage').textContent = "비밀번호가 일치하지 않습니다.";
+            document.getElementById('passwordVerifyMessage').style.color = 'red';
+        }
+    });
+
+    // 비밀번호 저장 버튼 로직
+    document.getElementById('savePassword').addEventListener('click', function() {
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+        if (newPassword !== confirmNewPassword) {
+            document.getElementById('passwordMessage').textContent = "새 비밀번호가 일치하지 않습니다.";
+            document.getElementById('passwordMessage').style.color = 'red';
+        } else {
+            // 실제 서버로 비밀번호 변경 요청 보내는 로직 추가 필요
+            document.getElementById('passwordMessage').textContent = "비밀번호가 성공적으로 변경되었습니다.";
+            document.getElementById('passwordMessage').style.color = 'green';
+        }
+    });
 </script>
 </body>
 </html>
