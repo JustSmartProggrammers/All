@@ -3,18 +3,27 @@ package com.example.controller;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
+import java.net.URISyntaxException;
 import org.json.JSONObject;
 
 public class ApiClient {
     public static void main(String[] args) {
         try {
-            // API Endpoint 예시
-            String url = "http://localhost:8080/api/v1/posts/1/comments";
-            URL obj = new URL(url);
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            // API endpoint 예시
+            String urlString = "http://localhost:8080/api/v1/posts/1/comments";
 
-            // 요청 방법을 GET으로 설정
+            // URL 문자열에서 URI 개체 만듬
+            URI uri = new URI(urlString);
+
+            // URI를 URL로 변환
+            URL url = uri.toURL();
+
+            // Open connection
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+            // 요청 방법 GET으로 설정
             con.setRequestMethod("GET");
             con.setRequestProperty("Accept", "application/json");
 
@@ -36,6 +45,8 @@ public class ApiClient {
             JSONObject jsonResponse = new JSONObject(response.toString());
             System.out.println(jsonResponse.toString(2));
 
+        } catch (URISyntaxException e) {
+            System.err.println("Invalid URL syntax: " + e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
         }
