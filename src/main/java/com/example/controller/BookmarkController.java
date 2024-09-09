@@ -48,8 +48,12 @@ public class BookmarkController extends HttpServlet {
         Bookmark bookmark = gson.fromJson(sb.toString(), Bookmark.class);
 
         try {
-            bookmarkService.createBookmark(bookmark);
-            sendJsonResponse(response, gson.toJson("북마크가 생성되었습니다."));
+            boolean created = bookmarkService.createBookmark(bookmark);
+            if (created) {
+                sendJsonResponse(response, gson.toJson("북마크가 생성되었습니다."));
+            } else {
+                sendErrorResponse(response, HttpServletResponse.SC_CONFLICT, "이미 존재하는 북마크입니다.");
+            }
         } catch (SQLException e) {
             sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "데이터베이스 오류 발생");
         }

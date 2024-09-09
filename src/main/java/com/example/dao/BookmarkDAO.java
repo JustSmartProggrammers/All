@@ -66,6 +66,20 @@ public class BookmarkDAO {
         }
         return null;
     }
+    public boolean bookmarkExists(Long userId, Long spotId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM bookmark WHERE userId = ? AND spotId = ? AND isDeleted = false";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setLong(1, userId);
+            pstmt.setLong(2, spotId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
 
     private Bookmark extractBookmarkFromResultSet(ResultSet rs) throws SQLException {
         Bookmark bookmark = new Bookmark();
@@ -75,4 +89,5 @@ public class BookmarkDAO {
         bookmark.setDeleted(rs.getBoolean("isDeleted"));
         return bookmark;
     }
+
 }

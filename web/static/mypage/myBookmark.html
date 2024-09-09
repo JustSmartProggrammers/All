@@ -1,98 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>북마크 목록</title>
+    <link rel="stylesheet" href="/static/mypage/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/mypage/css/style.css">
+    <script src="/static/mypage/js/jquery-3.6.0.min.js"></script>
+    <script src="/static/mypage/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/mypage/js/auth.js"></script> <!-- auth.js 추가 -->
+</head>
+<body>
 <div class="container">
-    <h2>북마크 목록</h2>
-    <div class="list-section" id="bookmarkList" style="display: block;">
-        <ul id="bookmarkItems"></ul>
-        <div class="pagination">
-            <button id="prevBookmarkPage">이전</button>
-            <span id="bookmarkPageNumbers"></span>
-            <button id="nextBookmarkPage">다음</button>
+    <h1>북마크 목록</h1>
+    <div class="row">
+        <!-- 북마크 목록을 표시할 섹션 -->
+        <div class="col-lg-8">
+            <div class="list-section">
+                <h3>북마크 목록</h3>
+                <ul id="bookmarkItems">
+                    <!-- 북마크 항목이 동적으로 삽입됩니다. -->
+                </ul>
+                <div id="bookmarkPageNumbers">
+                    <!-- 페이지 번호를 동적으로 삽입합니다. -->
+                </div>
+                <button id="prevBookmarkPage">이전 페이지</button>
+                <button id="nextBookmarkPage">다음 페이지</button>
+            </div>
         </div>
     </div>
 </div>
 
-<style>
-    .list-section {
-        margin-top: 20px;
-    }
-    .list-section ul {
-        list-style-type: none;
-        padding: 0;
-    }
-    .list-section ul li {
-        padding: 10px;
-        background-color: #f8f9fa;
-        margin-bottom: 10px;
-        border-radius: 5px;
-    }
-    .pagination {
-        display: flex;
-        justify-content: center;
-        margin: 20px 0;
-    }
-    .pagination button {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        background-color: #c0c0c0;
-        color: white;
-        cursor: pointer;
-        margin: 0 5px;
-    }
-    .pagination span {
-        padding: 10px 20px;
-        font-size: 16px;
-    }
-</style>
-
 <script>
-    let currentBookmarkPage = 1;
-    const itemsPerPage = 10;
+    const itemsPerPage = 10; // 페이지당 항목 수
 
-    // TODO: API 연결
-    // 1. 북마크 목록을 가져오는 함수를 구현하세요.
-    // 예: async function fetchBookmarks(page, perPage) { ... }
-
-    // 2. 페이지네이션 정보를 가져오는 함수를 구현하세요.
-    // 예: async function fetchBookmarkPagination(page, perPage) { ... }
-
-    function renderBookmarks(page) {
-        const bookmarkItems = document.getElementById('bookmarkItems');
-        bookmarkItems.innerHTML = ''; // 기존 목록 초기화
-
-        // TODO: API에서 데이터를 가져와 렌더링하는 로직으로 변경하세요.
-        // 예:
-        // fetchBookmarks(page, itemsPerPage).then(bookmarks => {
-        //     bookmarks.forEach(bookmark => {
-        //         const li = document.createElement('li');
-        //         li.textContent = bookmark.title;
-        //         bookmarkItems.appendChild(li);
-        //     });
-        // });
-
-        updateBookmarkPagination(page);
+    function loadBookmarks(userId, pageNumber) {
+        $.ajax({
+            url: `http://localhost:8080/api/v1/bookmark/user/${userId}?page=${pageNumber}&size=${itemsPerPage}`,
+            method: 'GET',
+            success: function(data) {
+                if (Array.isArray(data)) {
+                    $('#bookmarkItems').html(data.map(bookmark =>
+                        `<li>
+                            북마크 ID: ${bookmark.id}, Spot ID: ${bookmark.spotId}
+                            <button onclick="deleteBookmark(${bookmark.id})">삭제</button>
+                        </li>`
+                    ).join(''));
+                } else {
+                    console.error('Invalid data format:', data);
+                    $('#bookmarkItems').html('<li>북마크가 없습니다.</li>');
+                }
+                $('#bookmarkPageNumbers').text(`Page ${pageNumber}`);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('북마크를 가져오는 데 실패했습니다:', textStatus, errorThrown);
+                alert('북마크를 가져오는 데 실패했습니다.');
+            }
+        });
     }
 
-    function updateBookmarkPagination(page) {
-        // TODO: API에서 페이지네이션 정보를 가져와 업데이트하는 로직으로 변경하세요.
-        // 예:
-        // fetchBookmarkPagination(page, itemsPerPage).then(paginationInfo => {
-        //     document.getElementById('bookmarkPageNumbers').textContent = `Page ${page} of ${paginationInfo.totalPages}`;
-        //     document.getElementById('prevBookmarkPage').disabled = page === 1;
-        //     document.getElementById('nextBookmarkPage').disabled = page === paginationInfo.totalPages;
-        // });
+    function deleteBookmark(bookmarkId) {
+        $.ajax({
+            url: `http://localhost:8080/api/v1/bookmark/${bookmarkId}`,
+            method: 'DELETE',
+            success: function() {
+                console.log('북마크가 삭제되었습니다.');
+                alert('북마크가 삭제되었습니다.');
+                const currentUser = getCurrentUser();
+                if (currentUser) {
+                    loadBookmarks(currentUser.userId, 1); // 페이지 1로 북마크를 다시 로드
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('북마크를 삭제하는 데 실패했습니다:', textStatus, errorThrown);
+                alert('북마크를 삭제하는 데 실패했습니다.');
+            }
+        });
     }
 
-    document.getElementById('prevBookmarkPage').addEventListener('click', function() {
-        if (currentBookmarkPage > 1) {
-            currentBookmarkPage--;
-            renderBookmarks(currentBookmarkPage);
+    $(document).ready(function() {
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+            let currentPage = 1;
+            loadBookmarks(currentUser.userId, currentPage);
+
+            $('#prevBookmarkPage').click(function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadBookmarks(currentUser.userId, currentPage);
+                }
+            });
+
+            $('#nextBookmarkPage').click(function() {
+                currentPage++;
+                loadBookmarks(currentUser.userId, currentPage);
+            });
+        } else {
+            console.error('로그인된 사용자를 찾을 수 없습니다.');
+            alert('로그인된 사용자가 없습니다.');
         }
     });
-
-    document.getElementById('nextBookmarkPage').addEventListener('click', function() {
-        // TODO: 다음 페이지로 이동하는 로직을 구현하세요.
-        // 총 페이지 수는 API에서 제공하는 정보를 사용해야 합니다.
-    });
-
-    renderBookmarks(currentBookmarkPage);  // 초기 페이지 로드
 </script>
+</body>
+</html>

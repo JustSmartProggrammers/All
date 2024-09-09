@@ -16,9 +16,13 @@ public class BookmarkService {
         return bookmarkDAO.getBookmarksByUserId(userId);
     }
 
-    public void createBookmark(Bookmark bookmark) throws SQLException {
-        bookmarkDAO.createBookmark(bookmark);
+    public boolean createBookmark(Bookmark bookmark) throws SQLException {
+        if (bookmarkDAO.bookmarkExists(bookmark.getUserId(), bookmark.getSpotId())) {
+            return false; // 이미 존재하는 북마크
+        }
+        return bookmarkDAO.createBookmark(bookmark);
     }
+
 
     public void deleteBookmark(Long bookmarkId) throws SQLException {
         bookmarkDAO.deleteBookmark(bookmarkId);
