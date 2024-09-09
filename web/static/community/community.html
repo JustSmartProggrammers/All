@@ -4,80 +4,112 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="author" content="Untree.co">
-  <link rel="shortcut icon" href="../favicon.png">
+  <link rel="shortcut icon" href="/static/favicon.png">
+
   <meta name="description" content="" />
   <meta name="keywords" content="bootstrap, bootstrap4" />
 
   <!-- Bootstrap CSS -->
-  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-  <link href="../css/tiny-slider.css" rel="stylesheet">
-  <link href="../css/style.css" rel="stylesheet">
+  <link href="/static/css/tiny-slider.css" rel="stylesheet">
+  <link href="/static/css/style.css" rel="stylesheet">
+  <title>Sports Spot - 커뮤니티</title>
 
   <script src="/static/auth/auth.js"></script>
   <script src="/static/nav/navbar.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <title>커뮤니티 글 작성</title>
 
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      background-color: #f9f9f9;
-    }
-
-    /* 초록색 배경 영역 */
-    .hero {
-      background-color: #3b5d50; /* 색상 #3b5d50으로 변경 */
-      padding: 100px 0; /* MYPAGE.HTML과 같은 크기 */
-      color: white;
-      text-align: center; /* 중앙 정렬 */
-    }
-
-    /* 텍스트와 버튼 정렬 */
-    .hero .container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-direction: row;
-    }
-
-    .hero .intro-excerpt {
-      font-size: 2rem;
-      font-weight: bold;
-      white-space: nowrap; /* 텍스트가 가로로 나오게 강제 설정 */
-    }
-
-    /* 버튼 위치 조정 */
-    .hero .col-lg-7 {
-      display: flex;
-      justify-content: flex-end;
-    }
-
-    /* 기본 버튼 스타일 */
-    .btn-group {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
+    #content-area {
       margin-top: 20px;
     }
 
-    .btn-group button {
-      background-color: #4CAF50;
-      color: white;
+    .community-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+    }
+
+    .header-title {
+      font-size: 32px;
+      font-weight: bold;
+    }
+
+    .community-container {
+      padding-bottom: 50px;
+    }
+    .table-container {
+      width: 100%;
+      height: calc(100vh - 300px);
+      padding: 20px;
+      padding-right: 220px;
+      padding-left: 220px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+      overflow-x: auto;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th, td {
+      padding: 10px;
       border: none;
-      padding: 10px 20px;
-      cursor: pointer;
+      word-wrap: break-word;
+    }
+
+    th {
+      background-color: #3b5d50;
+      color: white;
+      height: 20px;
+      vertical-align: middle;
       font-size: 16px;
     }
 
-    .btn-group button:hover {
-      background-color: #45a049;
+    .pagination-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .pagination button {
+      background-color: #f9f9f9;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .pagination button:hover {
+      color: green;
+    }
+
+    .write-button {
+      background-color: #d9d9d9;
+      border: 1px solid black;
+      padding: 3px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px; /* Add some spacing between pagination and button */
     }
   </style>
 </head>
 
 <body>
+
 <div id="navbar-placeholder"></div>
 
 <script>
@@ -90,65 +122,166 @@
         console.error('setupNavbar function is not defined');
       }
     });
+
+    // Fetch and display posts
+    axios.get('http://localhost:8080/api/v1/posts')
+            .then(response => {
+              const posts = response.data;
+              const tableBody = $('#table-body');
+
+              // Clear existing content
+              tableBody.empty();
+
+              if (posts.length === 0) {
+                tableBody.append('<tr class="no-content"><td colspan="7">글이 없습니다.</td></tr>');
+              } else {
+                posts.forEach((post, index) => {
+                  const row = `<tr>
+              <td>${index + 1}</td> <!-- Display the number starting from 1 -->
+              <td>${post.region}</td>
+              <td>${post.sport}</td>
+              <td>${post.title}</td>
+              <td>${post.author}</td>
+              <td>${new Date(post.createdDate).toLocaleDateString()}</td>
+              <td>${post.views}</td>
+            </tr>`;
+                  tableBody.append(row);
+                });
+              }
+            })
+            .catch(error => {
+              console.error('Error fetching posts:', error);
+            });
   });
 </script>
 
-<!-- 초록색 배경 영역 -->
+<!-- Start Hero Section -->
 <div class="hero">
   <div class="container">
-    <div class="row justify-content-between align-items-center">
+    <div class="row justify-content-between">
       <div class="col-lg-5">
         <div class="intro-excerpt">
           <h1>커뮤니티</h1>
         </div>
       </div>
-      <div class="col-lg-7">
-        <!-- 오른쪽에 버튼 추가 가능 시 위치 맞춤 -->
-      </div>
     </div>
   </div>
 </div>
 
-<!-- 게시물 작성 섹션 시작 -->
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-12">
-      <div class="card">
-        <div class="card-body">
-          <form id="postForm" onsubmit="submitPost(event)">
+<!-- Community Section -->
+<div class="community-container">
+  <div class="community-header">
+  </div>
 
-            <!-- 제목 및 내용 섹션 -->
-            <div class="mb-3">
-              <label for="postTitle" class="form-label">제목</label>
-              <input type="text" class="form-control" id="postTitle" placeholder="제목을 입력하세요" required>
-            </div>
-            <div class="mb-3">
-              <label for="postContent" class="form-label">내용</label>
-              <textarea class="form-control" id="postContent" rows="10" placeholder="내용을 입력하세요" required></textarea>
-            </div>
+  <div class="table-container">
+    <table>
+      <thead>
+      <tr>
+        <th>번호</th>
+        <th>지역</th>
+        <th>종목</th>
+        <th>제목</th>
+        <th>작성자</th>
+        <th>작성일</th>
+        <th>조회수</th>
+      </tr>
+      </thead>
+      <tbody id="table-body">
+      <tr class="no-content">
+        <td colspan="7">글이 없습니다.</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
 
-            <!-- 버튼 섹션 -->
-            <div class="btn-group">
-              <button type="submit" class="btn-secondary">저장하기</button>
-            </div>
-          </form>
+  <div class="pagination-container">
+    <div class="pagination">
+      <button>&lt;&lt;</button>
+      <button>&lt;</button>
+      <button>1</button>
+      <button>&gt;</button>
+      <button>&gt;&gt;</button>
+    </div>
+    <button class="write-button" onclick="window.location.href='writecommunity.html'">글쓰기</button>
+  </div>
+</div>
+<!-- Start Footer Section -->
+<footer class="footer-section">
+  <div class="container relative">
+    <div class="row g-5 mb-5">
+      <div class="col-lg-4">
+        <div class="mb-4 footer-logo-wrap"><a href="#" class="footer-logo">Sports Spot<span>.</span></a></div>
+        <p class="mb-4">National Public Sports Facility Information Comprehensive Service</p>
+
+        <ul class="list-unstyled custom-social">
+          <li><a href="#"><span class="fa fa-brands fa-facebook-f"></span></a></li>
+          <li><a href="#"><span class="fa fa-brands fa-twitter"></span></a></li>
+          <li><a href="#"><span class="fa fa-brands fa-instagram"></span></a></li>
+          <li><a href="#"><span class="fa fa-brands fa-linkedin"></span></a></li>
+        </ul>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="row links-wrap">
+          <div class="col-6 col-sm-6 col-md-3">
+            <ul class="list-unstyled">
+              <li><a href="#">About us</a></li>
+              <li><a href="#">Services</a></li>
+              <li><a href="#">Blog</a></li>
+              <li><a href="#">Contact us</a></li>
+            </ul>
+          </div>
+
+          <div class="col-6 col-sm-6 col-md-3">
+            <ul class="list-unstyled">
+              <li><a href="#">Support</a></li>
+              <li><a href="#">Knowledge base</a></li>
+              <li><a href="#">Live chat</a></li>
+            </ul>
+          </div>
+
+          <div class="col-6 col-sm-6 col-md-3">
+            <ul class="list-unstyled">
+              <li><a href="#">Jobs</a></li>
+              <li><a href="#">Our team</a></li>
+              <li><a href="#">Leadership</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+            </ul>
+          </div>
+
+          <div class="col-6 col-sm-6 col-md-3">
+            <ul class="list-unstyled">
+              <li><a href="#">Nordic Chair</a></li>
+              <li><a href="#">Kruzo Aero</a></li>
+              <li><a href="#">Ergonomic Chair</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-top copyright">
+      <div class="row pt-4">
+        <div class="col-lg-6">
+          <p class="mb-2 text-center text-lg-start">Copyright &copy;<script>document.write(new Date().getFullYear());</script>. All Rights Reserved. &mdash; Designed with love by <a href="https://untree.co">Untree.co</a> Distributed By <a href="https://themewagon.com">ThemeWagon</a>  <!-- License information: https://untree.co/license/ -->
+          </p>
+        </div>
+
+        <div class="col-lg-6 text-center text-lg-end">
+          <ul class="list-unstyled d-inline-flex ms-auto">
+            <li class="me-4"><a href="#">Terms &amp; Conditions</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+          </ul>
         </div>
       </div>
     </div>
   </div>
-</div>
+</footer>
 
-<!-- 스크립트 -->
-<script>
-  // 게시물 작성 시 저장 후 리다이렉트
-  function submitPost(event) {
-    event.preventDefault();
-    alert('게시물이 작성되었습니다.');
-
-    // 작성 완료 후 contact.html로 이동
-    window.location.href = '/static/community/community.html';
-  }
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/tiny-slider.js"></script>
+<script src="/static/js/custom.js"></script>
 
 </body>
 </html>
