@@ -1,3 +1,65 @@
+<!-- myBookmark.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookmarks</title>
+    <style>
+        .bookmark-container {
+            margin-top: 20px;
+        }
+        .bookmark-header {
+            margin-bottom: 20px;
+        }
+        .bookmark-header h2 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        .no-content {
+            text-align: center;
+            color: #999;
+        }
+        .pagination-container {
+            text-align: center;
+        }
+        .pagination button {
+            background-color: #fff;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .pagination button:disabled {
+            background-color: #f2f2f2;
+            color: #999;
+            cursor: not-allowed;
+        }
+        .pagination span {
+            margin: 0 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
 <!-- My Bookmarks Section -->
 <div id="myBookmarkContent">
     <div class="bookmark-container">
@@ -10,7 +72,7 @@
                 <thead>
                 <tr>
                     <th>번호</th>
-                    <th>Spot ID</th>
+                    <th>스포츠 시설명</th>
                     <th>작업</th>
                 </tr>
                 </thead>
@@ -31,60 +93,6 @@
         </div>
     </div>
 </div>
-
-<style>
-    .bookmark-container {
-        margin-top: 20px;
-    }
-    .bookmark-header {
-        margin-bottom: 20px;
-    }
-    .bookmark-header h2 {
-        color: #333;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
-    }
-    th, td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-    }
-    th {
-        background-color: #f2f2f2;
-        font-weight: bold;
-    }
-    tr:nth-child(even) {
-        background-color: #fafafa;
-    }
-    .no-content {
-        text-align: center;
-        color: #999;
-    }
-    .pagination-container {
-        text-align: center;
-    }
-    .pagination button {
-        background-color: #fff;
-        color: #333;
-        border: 1px solid #ddd;
-        padding: 8px 16px;
-        margin: 0 5px;
-        cursor: pointer;
-        border-radius: 4px;
-    }
-    .pagination button:disabled {
-        background-color: #f2f2f2;
-        color: #999;
-        cursor: not-allowed;
-    }
-    .pagination span {
-        margin: 0 10px;
-        font-weight: bold;
-    }
-</style>
 
 <script>
     (function() {
@@ -121,6 +129,16 @@
                     }
                 }
 
+                async function fetchSpotName(spotId) {
+                    try {
+                        const response = await axios.get(`http://localhost:8080/api/v1/spots/detail/${spotId}`);
+                        return response.data.name; // Assuming the response contains a `name` field
+                    } catch (error) {
+                        console.error('스포츠 시설명을 가져오는 중 오류 발생:', error);
+                        return spotId; // Fallback to spotId if there's an error
+                    }
+                }
+
                 async function renderBookmarks(page) {
                     const bookmarks = await fetchUserBookmarks(page);
                     const tableBody = $('#bookmarkTableBody');
@@ -131,12 +149,13 @@
                         tableBody.append('<tr class="no-content"><td colspan="3">북마크가 없습니다.</td></tr>');
                     } else {
                         for (const [index, bookmark] of bookmarks.entries()) {
+                            const spotName = await fetchSpotName(bookmark.spotId);
                             const row = `
-                        <tr>
-                          <td>${(page - 1) * itemsPerPage + index + 1}</td>
-                          <td>${bookmark.spotId}</td>
-                          <td><button onclick="MyBookmarkModule.deleteBookmark(${bookmark.id})">삭제</button></td>
-                        </tr>`;
+                                    <tr>
+                                        <td>${(page - 1) * itemsPerPage + index + 1}</td>
+                                        <td><a href="/static/spot/spotDetail.html?id=${encodeURIComponent(bookmark.spotId)}">${spotName}</a></td>
+                                        <td><button onclick="MyBookmarkModule.deleteBookmark(${bookmark.id})">삭제</button></td>
+                                    </tr>`;
                             tableBody.append(row);
                         }
                     }
@@ -212,3 +231,5 @@
         }
     })();
 </script>
+</body>
+</html>
