@@ -1,98 +1,208 @@
-<div class="container">
-    <h2>작성글 목록</h2>
-    <div class="list-section" id="postList" style="display: block;">
-        <ul id="postItems"></ul>
-        <div class="pagination">
-            <button id="prevPostPage">이전</button>
-            <span id="postPageNumbers"></span>
-            <button id="nextPostPage">다음</button>
+<!-- My Posts Section -->
+<div id="myPostContent">
+    <div class="community-container">
+        <div class="community-header">
+            <h2>작성글 목록</h2>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>번호</th>
+                    <th>제목</th>
+                    <th>작성일</th>
+                </tr>
+                </thead>
+                <tbody id="myPostTableBody">
+                <tr class="no-content">
+                    <td colspan="3">작성한 글이 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-container">
+            <div class="pagination">
+                <button id="myPostPrevPage">&lt;</button>
+                <span id="myPostCurrentPage">1</span>
+                <button id="myPostNextPage">&gt;</button>
+            </div>
+            <button class="write-button" onclick="window.location.href='writecommunity.html'">글쓰기</button>
         </div>
     </div>
 </div>
 
 <style>
-    .list-section {
+    .community-container {
         margin-top: 20px;
     }
-    .list-section ul {
-        list-style-type: none;
-        padding: 0;
+    .community-header {
+        margin-bottom: 20px;
     }
-    .list-section ul li {
-        padding: 10px;
-        background-color: #f8f9fa;
-        margin-bottom: 10px;
-        border-radius: 5px;
+    .community-header h2 {
+        color: #333;
     }
-    .pagination {
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+    tr:nth-child(even) {
+        background-color: #fafafa;
+    }
+    .no-content {
+        text-align: center;
+        color: #999;
+    }
+    .pagination-container {
+        text-align: center;
         display: flex;
-        justify-content: center;
-        margin: 20px 0;
+        justify-content: space-between;
+        align-items: center;
     }
-    .pagination button {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        background-color: #c0c0c0;
-        color: white;
-        cursor: pointer;
+    .pagination button, .write-button {
+        background-color: #fff;
+        color: #333;
+        border: 1px solid #ddd;
+        padding: 8px 16px;
         margin: 0 5px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    .pagination button:disabled {
+        background-color: #f2f2f2;
+        color: #999;
+        cursor: not-allowed;
     }
     .pagination span {
-        padding: 10px 20px;
-        font-size: 16px;
+        margin: 0 10px;
+        font-weight: bold;
+    }
+    .write-button:hover {
+        background-color: #f2f2f2;
     }
 </style>
 
 <script>
-    let currentPostPage = 1;
-    const itemsPerPage = 10;
-
-    // TODO: API 연결
-    // 1. 작성글 목록을 가져오는 함수를 구현하세요.
-    // 예: async function fetchPosts(page, perPage) { ... }
-
-    // 2. 페이지네이션 정보를 가져오는 함수를 구현하세요.
-    // 예: async function fetchPostPagination(page, perPage) { ... }
-
-    function renderPosts(page) {
-        const postItems = document.getElementById('postItems');
-        postItems.innerHTML = ''; // 기존 목록 초기화
-
-        // TODO: API에서 데이터를 가져와 렌더링하는 로직으로 변경하세요.
-        // 예:
-        // fetchPosts(page, itemsPerPage).then(posts => {
-        //     posts.forEach(post => {
-        //         const li = document.createElement('li');
-        //         li.textContent = post.title;
-        //         postItems.appendChild(li);
-        //     });
-        // });
-
-        updatePostPagination(page);
-    }
-
-    function updatePostPagination(page) {
-        // TODO: API에서 페이지네이션 정보를 가져와 업데이트하는 로직으로 변경하세요.
-        // 예:
-        // fetchPostPagination(page, itemsPerPage).then(paginationInfo => {
-        //     document.getElementById('postPageNumbers').textContent = `Page ${page} of ${paginationInfo.totalPages}`;
-        //     document.getElementById('prevPostPage').disabled = page === 1;
-        //     document.getElementById('nextPostPage').disabled = page === paginationInfo.totalPages;
-        // });
-    }
-
-    document.getElementById('prevPostPage').addEventListener('click', function() {
-        if (currentPostPage > 1) {
-            currentPostPage--;
-            renderPosts(currentPostPage);
+    (function() {
+        function loadScript(url, callback) {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = url;
+            script.onload = callback;
+            document.head.appendChild(script);
         }
-    });
 
-    document.getElementById('nextPostPage').addEventListener('click', function () {
-        // TODO: 다음 페이지로 이동하는 로직을 구현하세요.
-        // 총 페이지 수는 API에서 제공하는 정보를 사용해야 합니다.
-    });
+        function initializeModule() {
+            const MyPostModule = (function() {
+                let currentPage = 1;
+                const itemsPerPage = 10;
+                let isInitialized = false;
+                const currentUser = getCurrentUser();
+                const userId = currentUser.userId;
+                console.log("userId : " + userId);
 
-    renderPosts(currentPostPage);  // 초기 페이지 로드
+                async function fetchUserPosts(page) {
+                    try {
+                        if (!userId) {
+                            console.error('사용자가 로그인하지 않았습니다');
+                            return [];
+                        }
+
+                        const response = await axios.get(`http://localhost:8080/api/v1/posts/user/${userId}?page=${page}&size=${itemsPerPage}`);
+                        console.log(response.data);
+                        return response.data;
+                    } catch (error) {
+                        console.error('사용자 게시물을 가져오는 중 오류 발생:', error);
+                        return [];
+                    }
+                }
+
+                async function renderPosts(page) {
+                    const posts = await fetchUserPosts(page);
+                    const tableBody = $('#myPostTableBody');
+
+                    tableBody.empty();
+
+                    if (posts.length === 0) {
+                        tableBody.append('<tr class="no-content"><td colspan="3">작성한 글이 없습니다.</td></tr>');
+                    } else {
+                        for (const [index, post] of posts.entries()) {
+                            const row = `
+                        <tr>
+                          <td>${(page - 1) * itemsPerPage + index + 1}</td>
+                          <td><a href="/static/community/communityDetail.html?id=${post.id}">${post.title}</a></td>
+                          <td>${new Date(post.createdAt).toLocaleDateString()}</td>
+                        </tr>`;
+                            tableBody.append(row);
+                        }
+                    }
+
+                    updatePagination(page);
+                }
+
+                function updatePagination(page) {
+                    $('#myPostPrevPage').prop('disabled', page === 1);
+                    $('#myPostNextPage').prop('disabled', false); // 마지막 페이지 확인 로직 필요
+                    $('#myPostCurrentPage').text(page);
+                }
+
+                function setupEventListeners() {
+                    $('#myPostPrevPage').off('click').on('click', function() {
+                        if (currentPage > 1) {
+                            currentPage--;
+                            renderPosts(currentPage);
+                        }
+                    });
+
+                    $('#myPostNextPage').off('click').on('click', function() {
+                        currentPage++;
+                        renderPosts(currentPage);
+                    });
+                }
+
+                return {
+                    init: function() {
+                        if (!isInitialized) {
+                            setupEventListeners();
+                            renderPosts(currentPage);
+                            isInitialized = true;
+                        } else {
+                            console.log('MyPostModule is already initialized');
+                        }
+                    }
+                };
+            })();
+
+            window.initializeMyPosts = function() {
+                MyPostModule.init();
+            };
+
+            // DOM이 로드된 후 MyPostModule 초기화
+            $(document).ready(function() {
+                window.initializeMyPosts();
+            });
+        }
+
+        // jQuery가 이미 로드되었는지 확인
+        if (typeof jQuery === 'undefined') {
+            loadScript('https://code.jquery.com/jquery-3.6.0.min.js', function() {
+                // jQuery 로드 후 axios 로드
+                loadScript('https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js', initializeModule);
+            });
+        } else {
+            // jQuery가 이미 로드되었다면 axios만 로드
+            loadScript('https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js', initializeModule);
+        }
+    })();
 </script>
