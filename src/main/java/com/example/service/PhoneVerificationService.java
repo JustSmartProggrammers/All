@@ -9,9 +9,9 @@ import java.util.Random;
 import java.util.regex.Pattern;
 
 public class PhoneVerificationService {
-    private final String API_KEY = "NCSY5BFHL6BV8E0Z";
-    private final String API_SECRET = "EJR8V0S6B9RVYPZXLA0PIHYJ6VP17BV9";
-    private final String SENDER_NUMBER = "01039385327";
+    private final String API_KEY = "NCSTAKTEQKHUPBZC";
+    private final String API_SECRET = "4REZJUQPNK3YZJ6E7RJPGJRUJGN0AGWJ";
+    private final String SENDER_NUMBER = "01047434904";
 
     private static final Pattern PHONE_PATTERN = Pattern.compile("^010\\d{8}$");
 
